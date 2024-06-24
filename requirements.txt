@@ -1,0 +1,22 @@
+numpy==1.24.1
+pip==22.3.1
+setuptools==65.5.1
+wheel==0.38.4
+pandas~=1.5.3
+plotly~=5.13.0
+matplotlib~=3.6.3
+networkx~=3.0
+scipy~=1.10.0
+kaleido~=0.2.1
+pytest~=7.2.1
+requests
+economic_complexity
+
+# el ambiente:
+pandas-stubs # para tener tipado
+
+jupyter
+mypy
+flake8
+#python-ruff
+#python-pyright
