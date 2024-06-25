@@ -54,22 +54,22 @@ def filter_biggests(df):
     df_products = df.groupby('HS4 ID')['Trade Value'].sum().reset_index()
     df_products = df_products[df_products['Trade Value'] > 3*500000000]
     # Countries with more than $3B in global exports between 2016-2018
-    df_countries = df.groupby('Country ID')['Trade Value'].sum().reset_index()
+    df_countries = df.groupby('Country')['Trade Value'].sum().reset_index()
     df_countries = df_countries[df_countries['Trade Value'] > 3*1000000000]
 
     df_filter = df[
-        (df['Country ID'].isin(df_countries['Country ID'])) &
+        (df['Country'].isin(df_countries['Country'])) &
         (df['HS4 ID'].isin(df_products['HS4 ID']))
     ]
     return df_filter
 
 
 def build_country_product_values_table(df):
-    return pd.pivot_table(df, index=['Country ID'],
+    return pd.pivot_table(df, index=['Country'],
                           columns=['HS4 ID'],
                           values='Trade Value')\
              .reset_index()\
-             .set_index('Country ID')\
+             .set_index('Country')\
              .dropna(axis=1, how="all")\
              .fillna(0)\
              .astype(float)
@@ -86,7 +86,6 @@ def get_default_oec_rca_raw_data() -> tuple[DataFrame, DataFrame]:
     Todo esto debería ir en el informe medianamente justificado """
     try:
         df_raw = load_data_from_pickle()
-        print(f"Se encontró una caché para los datos en {DEFAULT_OCE_FILE_NAME_PREFIX}")
     except Exception as e:
         print("Sucedió algo al intentar obtener los datos crudos cacheados:"
               + f"\n{e}"
@@ -112,5 +111,9 @@ def save_data_2_pickle(raw_data, years, pkl_file_name = None):
 
 def load_data_from_pickle(pkl_file_name=DEFAULT_OCE_FILE_NAME):
     "TODO: Comprobar si son los datos de la cátedra y ajusta índices"
-    with open(DATA_PATH + f"{pkl_file_name}.pkl", "rb") as pkl:
-        return pickle.load(pkl)
+    file_full_path_name = DATA_PATH + f"{pkl_file_name}.pkl"
+    with open(file_full_path_name, "rb") as pkl:
+        data = pickle.load(pkl)
+        print(f"Se cargaron los datos desde {file_full_path_name}")
+        return data
+

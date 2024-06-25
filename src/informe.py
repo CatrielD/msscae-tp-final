@@ -7,7 +7,8 @@ from typing import List
 from lib.utils import HS4_Product_Id
 
 from lib.agente import PaisComplejo
-from lib.simulador import SimuladorComplejo, SimuladorEstatico
+from lib.simulador import SimuladorComplejo, SimuladorEstatico, \
+    SimuladorDinamico
 
 __all__ = [
     "PaisHormiga",
@@ -15,6 +16,7 @@ __all__ = [
     "SimuladorCigarras",
     "SimuladorHormigas",
     "SimuladorEstatico",
+    "SimuladorDinamico",
     "SimuladorComplejo"
 ]
 

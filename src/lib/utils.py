@@ -4,7 +4,8 @@ from typing import List, Dict  # , Self # recién en py3.11
 
 
 HS4_Product_Id = int
-Country_Id = str
+Country_Id = str  # deprecado
+Country_Name = str
 Tiempo = int
 
 
@@ -18,8 +19,8 @@ def print_m(msg, mostrar=True):
         print(msg)
 
 
-def correr_simulacion_mostrando(sim, mostrar=True)\
-        -> List[Dict[Country_Id, List[HS4_Product_Id]]]:
+def correr_simulacion_mostrando(sim, mostrar=True, pad=40)\
+        -> List[Dict[Country_Name, List[HS4_Product_Id]]]:
     "horrible esta función"
     res = []
     start = time.time()
@@ -28,15 +29,15 @@ def correr_simulacion_mostrando(sim, mostrar=True)\
         res.append(d)
         print_m(f"iteración: {sim.current_step}", mostrar)
         for pais, productos in d.items():
-            print_m(f"\t{pais.country_id}: descubrió {len(productos)}\t({pais})", mostrar) # noqa
+            print_m(f"\t{pais.country_name:-<{pad}}> descubrió {len(productos)}", mostrar) # noqa
         print_m(f"tiempo iteración: {time.time() - it_start}", mostrar)
         it_start = time.time()
     print_m(f"tiempo total: {time.time() - start}", mostrar)
     return res
 
 
-def get_country_name(country_id, df: DataFrame):
-    return df[df["Country ID"] == country_id]["Country"].values[0]
+def get_country_name(country_name, df: DataFrame):
+    return df[df["Country ID"] == country_name]["Country"].values[0]
 
 
 def consecutive_pairs(lst) -> list[tuple[int, int]]:

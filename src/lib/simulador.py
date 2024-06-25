@@ -1,7 +1,7 @@
 from typing import Iterator, Callable, Dict
 from pandas import DataFrame
 import economic_complexity as ecplx
-from lib.utils import Country_Id, HS4_Product_Id, SubclassResponsability
+from lib.utils import Country_Name, HS4_Product_Id, SubclassResponsability
 import time
 
 from lib.agente import PaisNaive
@@ -34,7 +34,7 @@ class Simulador:
 
     # TODO: que devuelva lo que usa para contar el criterio de parada,
     # un counter, indice gini, etc
-    def iterar_simulacion(self) -> Iterator[Dict[Country_Id, HS4_Product_Id]]:
+    def iterar_simulacion(self) -> Iterator[Dict[Country_Name, HS4_Product_Id]]:
         """Devuelve un iterador para poder simularlo por pasos y
         obtener para cada país que productos alcanzaron
         competitividad
@@ -71,7 +71,7 @@ class Simulador:
         raise SubclassResponsability
 
     def _actualizar_estado(self,
-                           output_iteracion: Dict[Country_Id, HS4_Product_Id]):
+                           output_iteracion: Dict[Country_Name, HS4_Product_Id]):
         """se encarga del book keeping y la transiciones de estado que
         no sean, responsabilidad del país. Entre ellas, el conteo de
         pasos por ejemplo
@@ -110,8 +110,8 @@ class SimuladorProductSpace(Simulador):
     # el omega, podría tener una simulación con toda esta lógica pero
     # que no use omega
     def _crear_paises(self):
-        return [PaisNaive(country_id, self.M, self.proximidad, self.omega)
-                for country_id in self.M.index]
+        return [PaisNaive(country_name, self.M, self.proximidad, self.omega)
+                for country_name in self.M.index]
 
     def _estado_inicial_de_parada(self):
         self.current_step = 0
@@ -148,7 +148,7 @@ class SimuladorComplejo(SimuladorProductSpace):
         self.ECI, self.PCI = ecplx.complexity(M)
         super().__init__(criterio_parada, M, omega)
 
-    def _actualizar_estado(self, output_iteracion: Dict[Country_Id, HS4_Product_Id]):
+    def _actualizar_estado(self, output_iteracion: Dict[Country_Name, HS4_Product_Id]):
         self.ECI, self.PCI = ecplx.complexity(self.M)
         super()._actualizar_estado(output_iteracion)
 
@@ -156,7 +156,7 @@ class SimuladorComplejo(SimuladorProductSpace):
         for p in self.paises:
             p.conocer_estado_del_mundo(
                 proximidad=self.proximidad,
-                eci=self.ECI[p.country_id], PCI=self.PCI)
+                eci=self.ECI[p.country_name], PCI=self.PCI)
 
 
 ######################################################################

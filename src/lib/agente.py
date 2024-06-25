@@ -15,7 +15,7 @@ import pandas as pd
 # from pandera.typing import DataFrame, Series
 
 from lib.utils import SubclassResponsability, \
-    HS4_Product_Id, Country_Id, Tiempo
+    HS4_Product_Id, Country_Name, Tiempo
 
 
 class IPais:
@@ -101,10 +101,8 @@ class PaisBaseMixin:
     desarrollar
     """
 
-    def __init__(self, country_id: Country_Id,
-                 country_name: str, M: DataFrame):  # DataFrame[bool]
+    def __init__(self, country_name: str, M: DataFrame):  # DataFrame[bool]
         self.M = M
-        self.country_id = country_id
         self.country_name = country_name
         self._investigando_dict: Dict[HS4_Product_Id, Tiempo] = {}
         # start = time.time()
@@ -135,18 +133,18 @@ class PaisBaseMixin:
     def actualizar_exportaciones(self, pids: List[HS4_Product_Id]):
         """Modifica las exportaciones."""
         for pid in pids:
-            self.M.loc[self.country_id][pid] = 1
+            self.M.loc[self.country_name][pid] = 1
         return self
 
     def productos_exportados_df(self) -> Index[HS4_Product_Id]:
-        productos_pais = self.M.loc[self.country_id]
+        productos_pais = self.M.loc[self.country_name]
         return productos_pais[productos_pais == 1].index
 
     def productos_exportados(self) -> List[HS4_Product_Id]:
         return self.productos_exportados_df().to_list()
 
     def es_exportado(self, pid: HS4_Product_Id) -> bool:
-        return self.M.loc[self.country_id][pid] == 1
+        return self.M.loc[self.country_name][pid] == 1
 
     def __str__(self):
         return self.country_name
@@ -167,7 +165,7 @@ class PaisConCotaProximidadMixin:
 
     def frontera_de_productos_df(self) -> DataFrame:  # [HS4_Product_Id]
         "Todos los productos alcanzables, devuelve una máscara"
-        productos_pais = self.M.loc[self.country_id]
+        productos_pais = self.M.loc[self.country_name]
         exportados = productos_pais[productos_pais == 1]
         no_exportados = productos_pais[productos_pais == 0]
 
@@ -196,10 +194,10 @@ class PaisNaive(PaisBaseMixin, PaisConCotaProximidadMixin, IPais):
     Este pais logra en cada iteración accede a ser competitivo, en un
     turno a todos los productos que estén a su alcance.
     """
-    def __init__(self, country_id: Country_Id, country_name: str,
+    def __init__(self, country_name: str,
                  M: DataFrame, proximidad: DataFrame, omega: float):
         "el constructor aglutina todo"
-        PaisBaseMixin.__init__(self, country_id, country_name, M)
+        PaisBaseMixin.__init__(self, country_name, M)
         PaisConCotaProximidadMixin.__init__(self, M, proximidad, omega)
 
     def tiempo_para_ser_competitivo(self, pid: HS4_Product_Id) -> Tiempo:
@@ -212,12 +210,12 @@ class PaisComplejo(PaisNaive, IPais):
     """Ok, este es el problema de los frameworks de subclasificación,
     esto no es un pais Naive, es todo lo contrario, sin embargo subclasifica
     porque es cómodo por el código compartido"""
-    def __init__(self, country_id: Country_Id, country_name: str,
+    def __init__(self, country_name: str,
                  M: DataFrame,
                  proximidad: DataFrame,
                  eci, PCI,
                  omega: float):
-        PaisNaive.__init__(self, country_id, country_name, M, proximidad, omega)
+        PaisNaive.__init__(self, country_name, M, proximidad, omega)
         self.mi_eci = eci
         self.PCI = PCI
 
