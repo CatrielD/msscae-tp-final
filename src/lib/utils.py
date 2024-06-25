@@ -1,7 +1,7 @@
 from pandas import DataFrame
 import time
 from typing import List, Dict  # , Self # recién en py3.11
-
+import numpy as np
 
 HS4_Product_Id = int
 Country_Id = str  # deprecado
@@ -50,3 +50,6 @@ def consecutive_pairs(lst) -> list[tuple[int, int]]:
             beg = n
     res.append((beg, lst[-1]))
     return res
+
+def cantidad_descubrimientos_iteracion( historia ):
+    return np.array([ np.sum([len(descubrimientos) for p_id, descubrimientos in d.items() ]) for d in historia])

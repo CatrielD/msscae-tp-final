@@ -6,15 +6,14 @@
 from typing import List
 from lib.utils import HS4_Product_Id
 
-from lib.agente import PaisComplejo
+from lib.agente import PaisComplejo, PaisNaive
 from lib.simulador import SimuladorComplejo, SimuladorEstatico, \
     SimuladorDinamico
 
 __all__ = [
+    "PaisNaive",
     "PaisHormiga",
     "PaisCigarra",
-    "SimuladorCigarras",
-    "SimuladorHormigas",
     "SimuladorEstatico",
     "SimuladorDinamico",
     "SimuladorComplejo"
@@ -33,23 +32,3 @@ class PaisCigarra(PaisComplejo):
         "selecciona los últimos 10% de productos más complejos de su frontera"
         tiempos = self.tiempos_para_ser_competitivo()
         return tiempos.nsmallest(int(len(tiempos) * 0.1)).index.to_list()
-
-
-class SimuladorCigarras(SimuladorComplejo):
-    def _crear_paises(self):
-        return [PaisCigarra(country_id, self.M,
-                            self.proximidad,
-                            self.ECI[country_id],
-                            self.PCI,
-                            self.omega)
-                for country_id in self.M.index]
-
-
-class SimuladorHormigas(SimuladorComplejo):
-    def _crear_paises(self):
-        return [PaisHormiga(country_id, self.M,
-                            self.proximidad,
-                            self.ECI[country_id],
-                            self.PCI,
-                            self.omega)
-                for country_id in self.M.index]
