@@ -26,12 +26,15 @@ class Simulador:
         self.criterio_parada = criterio_parada
         self._estado_inicial_de_parada()
         start = time.time()
-        self.paises = self._crear_paises(clase_pais)
+        self._paises = self._crear_paises(clase_pais)
         print(f"paises creados en: {time.time() - start}")
 
     def simular(self):
         for _ in self.iterar_simulacion():
             continue
+
+    def paises(self):
+        return self._paises.values()
 
     # TODO: que devuelva lo que usa para contar el criterio de parada,
     # un counter, indice gini, etc
@@ -43,16 +46,14 @@ class Simulador:
         while not self.es_fin_de_simulacion():
             output = {}
             # fase de decisiones
-            # (nota, la tener dos fases es muy paralilizable)
-            for pais in self.paises:
+            for pais in self.paises():
                 nuevos_productos = pais.elegir_productos()
                 for pid in nuevos_productos:
                     pais.investigar_producto(pid)
             # fase de acciones
-            for pais in self.paises:
+            for pais in self.paises():
                 terminados = pais.avanzar_tiempo()
-                # TODO: como se podría generalizar lo que devuelve?
-                output[pais] = terminados 
+                output[pais.country_name] = terminados # como se podría generalizar lo que devuelve?
                 pais.actualizar_exportaciones(terminados)
 
             self._actualizar_estado(output)
@@ -68,7 +69,7 @@ class Simulador:
     ###                                                                ###
     ######################################################################
 
-    def _crear_paises(self, clase_pais: Callable[..., IPais]):
+    def _crear_paises(self, clase_pais: Callable[..., IPais]) -> Dict[Country_Name, IPais]:
         raise SubclassResponsability
 
     def _actualizar_estado(self,
@@ -112,8 +113,10 @@ class SimuladorProductSpace(Simulador):
     # el omega, podría tener una simulación con toda esta lógica pero
     # que no use omega
     def _crear_paises(self, clase_pais: Callable[..., IPais]):
-        return [clase_pais(country_name, self.M, self.proximidad, self.omega)
-                for country_name in self.M.index]
+        return {country_name:
+                clase_pais(
+                    country_name, self.M, self.proximidad, self.omega)
+                for country_name in self.M.index}
 
     def _estado_inicial_de_parada(self):
         self.current_step = 0
@@ -137,7 +140,7 @@ class SimuladorDinamico(SimuladorProductSpace):
         super()._actualizar_estado(_)
 
     def _notificar_paises(self):
-        for p in self.paises:
+        for p in self.paises():
             # se podría pasar directamente por eficiencia, pero interfaz
             p.conocer_estado_del_mundo(proximidad=self.proximidad)
 
@@ -156,18 +159,20 @@ class SimuladorComplejo(SimuladorProductSpace):
         super()._actualizar_estado(output_iteracion)
 
     def _notificar_paises(self):
-        for p in self.paises:
+        for p in self.paises():
             p.conocer_estado_del_mundo(
                 proximidad=self.proximidad,
                 eci=self.ECI[p.country_name], PCI=self.PCI)
 
     def _crear_paises(self, clase_pais):
-        return [clase_pais(country_id, self.M,
-                           self.proximidad,
-                           self.ECI[country_id],
-                           self.PCI,
-                           self.omega)
-                for country_id in self.M.index]
+        return {country_name:
+                clase_pais(
+                    country_name, self.M,
+                    self.proximidad,
+                    self.ECI[country_name],
+                    self.PCI,
+                    self.omega)
+                for country_name in self.M.index}
 
 ######################################################################
 ###                                                                ###

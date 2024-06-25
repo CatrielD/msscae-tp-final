@@ -29,7 +29,7 @@ def correr_simulacion_mostrando(sim, mostrar=True, pad=40)\
         res.append(d)
         print_m(f"iteración: {sim.current_step}", mostrar)
         for pais, productos in d.items():
-            print_m(f"\t{pais.country_name:-<{pad}}> descubrió {len(productos)}", mostrar) # noqa
+            print_m(f"\t{pais:-<{pad}}> descubrió {len(productos)}", mostrar) # noqa
         print_m(f"tiempo iteración: {time.time() - it_start}", mostrar)
         it_start = time.time()
     print_m(f"tiempo total: {time.time() - start}", mostrar)
