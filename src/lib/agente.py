@@ -112,6 +112,8 @@ class PaisBaseMixin:
         return list(self._investigando_dict.keys())
 
     def investigar_producto(self, pid: HS4_Product_Id) -> Tiempo:
+        if pid in self._investigando_dict:
+            return self._investigando_dict[pid]
         tiempo = self.tiempo_para_ser_competitivo(pid)
         self._investigando_dict[pid] = tiempo
         return tiempo
@@ -133,7 +135,7 @@ class PaisBaseMixin:
     def actualizar_exportaciones(self, pids: List[HS4_Product_Id]):
         """Modifica las exportaciones."""
         for pid in pids:
-            self.M.loc[self.country_name][pid] = 1
+            self.M.loc[self.country_name, pid] = 1
         return self
 
     def productos_exportados_df(self) -> Index[HS4_Product_Id]:
@@ -171,9 +173,9 @@ class PaisConCotaProximidadMixin:
 
         frontera = (self.proximity.loc[exportados.index][no_exportados.index] > self.omega) # noqa
         frontera = frontera.any(axis='rows')
-        return frontera[frontera].index
-        # frontera = frontera[frontera].index
-        # return frontera
+        frontera = frontera[frontera]
+        frontera = frontera[~ frontera.index.isin(self.productos_en_investigacion())].index
+        return frontera
 
     def frontera_de_productos(self) -> List[HS4_Product_Id]:
         return self.frontera_de_productos_df().to_list()
@@ -188,8 +190,7 @@ class PaisConCotaProximidadMixin:
 class PaisNaive(PaisBaseMixin, PaisConCotaProximidadMixin, IPais):
     """Y por ejemplo ahora podemos definir un pais simple como una
     combinación de mixins tener cuidado con el orden de los
-    mixins... la interfaz es el último ¿performance? ¿quien quiere tal
-    cosa si puede jugar con interfaces?
+    mixins...
 
     Este pais logra en cada iteración accede a ser competitivo, en un
     turno a todos los productos que estén a su alcance.
