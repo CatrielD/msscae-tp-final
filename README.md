@@ -1,3 +1,6 @@
+# Notas para correr el notebook
+
+Es conveniente entrar en la carpeta ```data/``` y descomprimir los datos, así no se fetchean de nuevo
 
 # Notas para correr el Ambiente
 
