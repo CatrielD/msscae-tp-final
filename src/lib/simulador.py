@@ -150,8 +150,9 @@ class SimuladorComplejo(SimuladorProductSpace):
     def __init__(self,
                  criterio_parada: Callable[..., bool],
                  clase_pais: Callable[..., IPais],
-                 M: DataFrame, omega=0.4):
+                 M: DataFrame, omega=0.4, tiempo_maximo = 10):
         self.ECI, self.PCI = ecplx.complexity(M)
+        self.tiempo_maximo = tiempo_maximo
         super().__init__(criterio_parada, clase_pais, M, omega)
 
     def _actualizar_estado(self, output_iteracion: Dict[Country_Name, HS4_Product_Id]):
@@ -171,7 +172,8 @@ class SimuladorComplejo(SimuladorProductSpace):
                     self.proximidad,
                     self.ECI[country_name],
                     self.PCI,
-                    self.omega)
+                    self.omega,
+                    self.tiempo_maximo)
                 for country_name in self.M.index}
 
 ######################################################################
