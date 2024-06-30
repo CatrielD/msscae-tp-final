@@ -18,6 +18,8 @@ def print_m(msg, mostrar=True):
     if mostrar:
         print(msg)
 
+def epoch_2_date_str(epoch):
+    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(epoch))
 
 def correr_simulacion_mostrando(sim, mostrar=True, pad=40)\
         -> List[Dict[Country_Name, List[HS4_Product_Id]]]:
@@ -25,6 +27,7 @@ def correr_simulacion_mostrando(sim, mostrar=True, pad=40)\
     res = []
     start = time.time()
     it_start = time.time()
+    print_m(f"empezando simulación: {epoch_2_date_str(start)}")
     for d in sim.iterar_simulacion():
         res.append(d)
         print_m(f"iteración: {sim.current_step}", mostrar)
@@ -51,5 +54,19 @@ def consecutive_pairs(lst) -> list[tuple[int, int]]:
     res.append((beg, lst[-1]))
     return res
 
-def cantidad_descubrimientos_iteracion( historia ):
-    return np.array([ np.sum([len(descubrimientos) for p_id, descubrimientos in d.items() ]) for d in historia])
+
+def cantidad_descubrimientos_iteracion(historia, paises = None):
+    return np.array(
+        [ np.sum([len(descubrimientos) \
+                  for p_name, descubrimientos in d.items() if not paises or p_name in paises]) \
+          for d in historia ])
+
+
+def cantidad_descubrimientos_paises(historia) -> dict[str]:
+    res = {}
+    for h in historia:
+        for pais, productos in h.items():
+            acc = res.get(pais,0) 
+            acc += len(productos)
+            res[pais] = acc
+    return res

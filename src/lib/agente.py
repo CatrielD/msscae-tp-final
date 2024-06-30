@@ -227,20 +227,19 @@ class PaisComplejo(PaisNaive, IPais):
         PaisNaive.__init__(self, country_name, M, proximidad, omega)
 
     def tiempo_para_ser_competitivo(self, pid: HS4_Product_Id) -> Tiempo:
-        #"""TODO: discutir esto. además no se porque ECI y PCI dan negativos (ver más arriba)
-        #esto es muy similar al cálculo de proximidad, pero en vez del máximo como define el paper se calcula el mínimo
-        #(nosotros no calculamos el máximo, porque como es un umbral usamos .any(), ver el método frontera_de_productos_df)
-        #"""
-        # complejidad = self.PCI[pid]
-        # return math.ceil(abs((complejidad / self.mi_eci)))
         """ basicamente tomo las complejidades de productos y mapeo linealmente entre 0 y 10.
              es decir el producto mas sencillo tarda 0 iteraciones, el mas complejo 10. """
-        return np.ceil( self.tiempo_maximo * ( self.PCI.loc[pid] + np.abs(self.min_pci) ) / self.max_pci )
+        return np.ceil(self.tiempo_maximo * (self.PCI.loc[pid] + np.abs(self.min_pci)) / self.max_pci)
 
     def tiempos_para_ser_competitivo(self) -> Series[Tiempo]:
         frontera = self.frontera_de_productos()
-        tiempos = [ self.tiempo_para_ser_competitivo(pid) for pid in frontera ]
-        return pd.Series( tiempos, index=frontera)
+        tiempos = [self.tiempo_para_ser_competitivo(pid) for pid in frontera]
+        return pd.Series(tiempos, index=frontera)
+
+    def conocer_estado_del_mundo(self, **kwargs):
+        self.mi_eci = kwargs["eci"]
+        self.PCI = kwargs["PCI"]
+        super().conocer_estado_del_mundo(**kwargs)
 
 
 ######################################################################
