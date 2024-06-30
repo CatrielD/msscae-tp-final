@@ -3,6 +3,8 @@ from pandas import DataFrame
 import economic_complexity as ecplx
 from lib.utils import Country_Name, HS4_Product_Id, SubclassResponsability
 import time
+import networkx as nx
+import numpy as np
 
 from lib.agente import PaisNaive, IPais
 
@@ -127,7 +129,16 @@ class SimuladorProductSpace(Simulador):
 
     def es_fin_de_simulacion(self):
         return self.criterio_parada(self.current_step)
+    
+    def grafo( self ):
+        nodos = self.proximidad.columns.tolist()
+        matriz_adyacencia = self.proximidad.values        
+        edges = np.where(matriz_adyacencia > self.omega, matriz_adyacencia, np.zeros_like(matriz_adyacencia))
 
+        G = nx.from_numpy_array( edges, edge_attr='weight' )
+        G = nx.relabel_nodes( G , dict(zip( np.arange(len(nodos)), nodos)) )
+
+        return G
 
 class SimuladorEstatico(SimuladorProductSpace):
     def _notificar_paises(self):
