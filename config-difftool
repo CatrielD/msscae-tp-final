@@ -1,0 +1,4 @@
+#!/bin/bash
+
+git config --local diff.tool nb-tool
+git config --local difftool.nb-tool.cmd 'python ./tools/nb-tool.py --diff "${LOCAL}" "${REMOTE}"'
