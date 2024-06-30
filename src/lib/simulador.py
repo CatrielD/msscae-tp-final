@@ -22,11 +22,11 @@ class Simulador:
 
     def __init__(self,
                  criterio_parada: Callable[..., bool],
-                 clase_pais: Callable[..., IPais]):
+                 constructor_pais: Callable[..., IPais]):
         self.criterio_parada = criterio_parada
         self._estado_inicial_de_parada()
         start = time.time()
-        self._paises = self._crear_paises(clase_pais)
+        self._paises = self._crear_paises(constructor_pais)
         print(f"paises creados en: {time.time() - start}")
 
     def simular(self):
@@ -69,7 +69,7 @@ class Simulador:
     ###                                                                ###
     ######################################################################
 
-    def _crear_paises(self, clase_pais: Callable[..., IPais]) -> Dict[Country_Name, IPais]:
+    def _crear_paises(self, constructor_pais: Callable[..., IPais]) -> Dict[Country_Name, IPais]:
         raise SubclassResponsability
 
     def _actualizar_estado(self,
@@ -98,7 +98,7 @@ class SimuladorProductSpace(Simulador):
 
     def __init__(self,
                  criterio_parada: Callable[..., bool],
-                 clase_pais: Callable[..., IPais],
+                 constructor_pais: Callable[..., IPais],
                  M: DataFrame, omega=0.4):
         self.M = M
         self.omega = omega
@@ -106,15 +106,15 @@ class SimuladorProductSpace(Simulador):
         self.proximidad = ecplx.proximity(M)
         print(f"proximidad calculada en: {time.time() - start}")
         # llamar al constructor de las super clases al final
-        super().__init__(criterio_parada, clase_pais)
+        super().__init__(criterio_parada, constructor_pais)
 
     # TODO tal vez un diseño mediante wrappers sería mejor? así puedo
     # cambiar facilmente el tipo de país y puedo sacar del constructor
     # el omega, podría tener una simulación con toda esta lógica pero
     # que no use omega
-    def _crear_paises(self, clase_pais: Callable[..., IPais]):
+    def _crear_paises(self, constructor_pais: Callable[..., IPais]):
         return {country_name:
-                clase_pais(
+                constructor_pais(
                     country_name, self.M, self.proximidad, self.omega)
                 for country_name in self.M.index}
 
@@ -149,11 +149,11 @@ class SimuladorComplejo(SimuladorProductSpace):
     """Un simulador complejo tiene paises que consideran su complejidad"""
     def __init__(self,
                  criterio_parada: Callable[..., bool],
-                 clase_pais: Callable[..., IPais],
+                 constructor_pais: Callable[..., IPais]
                  M: DataFrame, omega=0.4, tiempo_maximo = 10):
         self.ECI, self.PCI = ecplx.complexity(M)
         self.tiempo_maximo = tiempo_maximo
-        super().__init__(criterio_parada, clase_pais, M, omega)
+        super().__init__(criterio_parada, constructor_pais, M, omega)
 
     def _actualizar_estado(self, output_iteracion: Dict[Country_Name, HS4_Product_Id]):
         self.ECI, self.PCI = ecplx.complexity(self.M)
@@ -165,9 +165,9 @@ class SimuladorComplejo(SimuladorProductSpace):
                 proximidad=self.proximidad,
                 eci=self.ECI[p.country_name], PCI=self.PCI)
 
-    def _crear_paises(self, clase_pais):
+    def _crear_paises(self, constructor_pais):
         return {country_name:
-                clase_pais(
+                constructor_pais(
                     country_name, self.M,
                     self.proximidad,
                     self.ECI[country_name],
