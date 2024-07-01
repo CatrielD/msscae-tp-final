@@ -1,7 +1,7 @@
 from typing import Iterator, Callable, Dict
 from pandas import DataFrame
 import economic_complexity as ecplx
-from lib.utils import Country_Name, HS4_Product_Id, SubclassResponsability
+from lib.utils import Country_Name, HS4_Product_Id, SubclassResponsability, default_collector
 import time
 
 from lib.agente import PaisNaive, IPais
@@ -38,7 +38,7 @@ class Simulador:
 
     # TODO: que devuelva lo que usa para contar el criterio de parada,
     # un counter, indice gini, etc
-    def iterar_simulacion(self) -> Iterator[Dict[Country_Name, HS4_Product_Id]]:
+    def iterar_simulacion(self, collector = default_collector) -> Iterator[Dict[Country_Name, HS4_Product_Id]]:
         """Devuelve un iterador para poder simularlo por pasos y
         obtener para cada país que productos alcanzaron
         competitividad
@@ -53,7 +53,8 @@ class Simulador:
             # fase de acciones
             for pais in self.paises():
                 terminados = pais.avanzar_tiempo()
-                output[pais.country_name] = terminados # como se podría generalizar lo que devuelve?
+                collector(output, pais, terminados)
+                #output[pais.country_name] = terminados # como se podría generalizar lo que devuelve?
                 pais.actualizar_exportaciones(terminados)
 
             self._actualizar_estado(output)
@@ -149,7 +150,7 @@ class SimuladorComplejo(SimuladorProductSpace):
     """Un simulador complejo tiene paises que consideran su complejidad"""
     def __init__(self,
                  criterio_parada: Callable[..., bool],
-                 constructor_pais: Callable[..., IPais]
+                 constructor_pais: Callable[..., IPais],
                  M: DataFrame, omega=0.4, tiempo_maximo = 10):
         self.ECI, self.PCI = ecplx.complexity(M)
         self.tiempo_maximo = tiempo_maximo
@@ -168,12 +169,13 @@ class SimuladorComplejo(SimuladorProductSpace):
     def _crear_paises(self, constructor_pais):
         return {country_name:
                 constructor_pais(
-                    country_name, self.M,
-                    self.proximidad,
-                    self.ECI[country_name],
-                    self.PCI,
-                    self.omega,
-                    self.tiempo_maximo)
+                    country_name=country_name,
+                    M=self.M,
+                    proximidad=self.proximidad,
+                    eci=self.ECI[country_name],
+                    PCI=self.PCI,
+                    omega=self.omega,
+                    tiempo_maximo=self.tiempo_maximo)
                 for country_name in self.M.index}
 
 ######################################################################

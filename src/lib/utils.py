@@ -21,18 +21,35 @@ def print_m(msg, mostrar=True):
 def epoch_2_date_str(epoch):
     return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(epoch))
 
-def correr_simulacion_mostrando(sim, mostrar=True, pad=40)\
-        -> List[Dict[Country_Name, List[HS4_Product_Id]]]:
-    "horrible esta función"
+
+def default_collector(output, pais, productos_terminados):
+    output[pais.country_name] = productos_terminados
+
+
+def pais_collector(output, pais, productos_terminados):
+    output[pais] = productos_terminados
+
+
+def default_formatter(pais, prod_terminados, pad):
+    return f"\t{str(pais):-<{pad}}> descubrió {len(prod_terminados)}"
+
+
+def pais_con_producciones_e_investigaciones_formatter(pais, prod_terminados, pad):
+    return f"\t{str(pais):-<{pad}}> descubrió {len(prod_terminados)} en investigación: {len(pais.productos_en_investigacion())}"
+
+
+def correr_simulacion_mostrando(sim, mostrar=True, pad=40,
+                                collector=default_collector,
+                                formatter=default_formatter) -> List[Dict[Country_Name, List[HS4_Product_Id]]]:
     res = []
     start = time.time()
     it_start = time.time()
     print_m(f"empezando simulación: {epoch_2_date_str(start)}")
-    for d in sim.iterar_simulacion():
+    for d in sim.iterar_simulacion(collector):
         res.append(d)
         print_m(f"iteración: {sim.current_step}", mostrar)
         for pais, productos in d.items():
-            print_m(f"\t{pais:-<{pad}}> descubrió {len(productos)}", mostrar) # noqa
+            print_m(formatter(pais, productos, pad), mostrar) # noqa
         print_m(f"tiempo iteración: {time.time() - it_start}", mostrar)
         it_start = time.time()
     print_m(f"tiempo total: {time.time() - start}", mostrar)
