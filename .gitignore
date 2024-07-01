@@ -3,3 +3,5 @@ __pycache__/
 *.py[cod]
 *$py.class
 data/default_oce_2018-2020.pkl
+.ipynb_checkpoints
+./**/.ipynb_checkpoints
