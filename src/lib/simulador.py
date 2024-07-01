@@ -38,12 +38,10 @@ class Simulador:
     def paises(self):
         return self._paises.values()
 
-    # TODO: que devuelva lo que usa para contar el criterio de parada,
-    # un counter, indice gini, etc
     def iterar_simulacion(self, collector = default_collector) -> Iterator[Dict[Country_Name, HS4_Product_Id]]:
-        """Devuelve un iterador para poder simularlo por pasos y
-        obtener para cada país que productos alcanzaron
-        competitividad
+        """Devuelve un iterador para poder simularlo por pasos.
+        Toma una función (output:dict, pais, productos alcanzados en esta iteración)
+        que permite cambiar que devuelve el simulador
         """
         while not self.es_fin_de_simulacion():
             output = {}
@@ -56,7 +54,6 @@ class Simulador:
             for pais in self.paises():
                 terminados = pais.avanzar_tiempo()
                 collector(output, pais, terminados)
-                #output[pais.country_name] = terminados # como se podría generalizar lo que devuelve?
                 pais.actualizar_exportaciones(terminados)
 
             self._actualizar_estado(output)
@@ -96,7 +93,7 @@ class Simulador:
 
 class SimuladorProductSpace(Simulador):
     """Simulador base, con paises Naive que opera sobre el grafo de
-    proximidades, -mal llamado- product space
+    proximidades, -mal llamado- product space (podría haber un espacio de productos distinto...)
     """
 
     def __init__(self,
@@ -153,7 +150,6 @@ class SimuladorDinamico(SimuladorProductSpace):
 
     def _notificar_paises(self):
         for p in self.paises():
-            # se podría pasar directamente por eficiencia, pero interfaz
             p.conocer_estado_del_mundo(proximidad=self.proximidad)
 
 
