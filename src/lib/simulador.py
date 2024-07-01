@@ -1,7 +1,7 @@
 from typing import Iterator, Callable, Dict
 from pandas import DataFrame
 import economic_complexity as ecplx
-from lib.utils import Country_Name, HS4_Product_Id, SubclassResponsability
+from lib.utils import Country_Name, HS4_Product_Id, SubclassResponsability, default_collector
 import time
 import networkx as nx
 import numpy as np
@@ -24,11 +24,11 @@ class Simulador:
 
     def __init__(self,
                  criterio_parada: Callable[..., bool],
-                 clase_pais: Callable[..., IPais]):
+                 constructor_pais: Callable[..., IPais]):
         self.criterio_parada = criterio_parada
         self._estado_inicial_de_parada()
         start = time.time()
-        self._paises = self._crear_paises(clase_pais)
+        self._paises = self._crear_paises(constructor_pais)
         print(f"paises creados en: {time.time() - start}")
 
     def simular(self):
@@ -38,12 +38,10 @@ class Simulador:
     def paises(self):
         return self._paises.values()
 
-    # TODO: que devuelva lo que usa para contar el criterio de parada,
-    # un counter, indice gini, etc
-    def iterar_simulacion(self) -> Iterator[Dict[Country_Name, HS4_Product_Id]]:
-        """Devuelve un iterador para poder simularlo por pasos y
-        obtener para cada país que productos alcanzaron
-        competitividad
+    def iterar_simulacion(self, collector = default_collector) -> Iterator[Dict[Country_Name, HS4_Product_Id]]:
+        """Devuelve un iterador para poder simularlo por pasos.
+        Toma una función (output:dict, pais, productos alcanzados en esta iteración)
+        que permite cambiar que devuelve el simulador
         """
         while not self.es_fin_de_simulacion():
             output = {}
@@ -55,7 +53,7 @@ class Simulador:
             # fase de acciones
             for pais in self.paises():
                 terminados = pais.avanzar_tiempo()
-                output[pais.country_name] = terminados # como se podría generalizar lo que devuelve?
+                collector(output, pais, terminados)
                 pais.actualizar_exportaciones(terminados)
 
             self._actualizar_estado(output)
@@ -71,7 +69,7 @@ class Simulador:
     ###                                                                ###
     ######################################################################
 
-    def _crear_paises(self, clase_pais: Callable[..., IPais]) -> Dict[Country_Name, IPais]:
+    def _crear_paises(self, constructor_pais: Callable[..., IPais]) -> Dict[Country_Name, IPais]:
         raise SubclassResponsability
 
     def _actualizar_estado(self,
@@ -95,12 +93,12 @@ class Simulador:
 
 class SimuladorProductSpace(Simulador):
     """Simulador base, con paises Naive que opera sobre el grafo de
-    proximidades, -mal llamado- product space
+    proximidades, -mal llamado- product space (podría haber un espacio de productos distinto...)
     """
 
     def __init__(self,
                  criterio_parada: Callable[..., bool],
-                 clase_pais: Callable[..., IPais],
+                 constructor_pais: Callable[..., IPais],
                  M: DataFrame, omega=0.4):
         self.M = M
         self.omega = omega
@@ -108,15 +106,15 @@ class SimuladorProductSpace(Simulador):
         self.proximidad = ecplx.proximity(M)
         print(f"proximidad calculada en: {time.time() - start}")
         # llamar al constructor de las super clases al final
-        super().__init__(criterio_parada, clase_pais)
+        super().__init__(criterio_parada, constructor_pais)
 
     # TODO tal vez un diseño mediante wrappers sería mejor? así puedo
     # cambiar facilmente el tipo de país y puedo sacar del constructor
     # el omega, podría tener una simulación con toda esta lógica pero
     # que no use omega
-    def _crear_paises(self, clase_pais: Callable[..., IPais]):
+    def _crear_paises(self, constructor_pais: Callable[..., IPais]):
         return {country_name:
-                clase_pais(
+                constructor_pais(
                     country_name, self.M, self.proximidad, self.omega)
                 for country_name in self.M.index}
 
@@ -152,7 +150,6 @@ class SimuladorDinamico(SimuladorProductSpace):
 
     def _notificar_paises(self):
         for p in self.paises():
-            # se podría pasar directamente por eficiencia, pero interfaz
             p.conocer_estado_del_mundo(proximidad=self.proximidad)
 
 
@@ -160,11 +157,11 @@ class SimuladorComplejo(SimuladorProductSpace):
     """Un simulador complejo tiene paises que consideran su complejidad"""
     def __init__(self,
                  criterio_parada: Callable[..., bool],
-                 clase_pais: Callable[..., IPais],
+                 constructor_pais: Callable[..., IPais],
                  M: DataFrame, omega=0.4, tiempo_maximo = 10):
         self.ECI, self.PCI = ecplx.complexity(M)
         self.tiempo_maximo = tiempo_maximo
-        super().__init__(criterio_parada, clase_pais, M, omega)
+        super().__init__(criterio_parada, constructor_pais, M, omega)
 
     def _actualizar_estado(self, output_iteracion: Dict[Country_Name, HS4_Product_Id]):
         self.ECI, self.PCI = ecplx.complexity(self.M)
@@ -176,15 +173,16 @@ class SimuladorComplejo(SimuladorProductSpace):
                 proximidad=self.proximidad,
                 eci=self.ECI[p.country_name], PCI=self.PCI)
 
-    def _crear_paises(self, clase_pais):
+    def _crear_paises(self, constructor_pais):
         return {country_name:
-                clase_pais(
-                    country_name, self.M,
-                    self.proximidad,
-                    self.ECI[country_name],
-                    self.PCI,
-                    self.omega,
-                    self.tiempo_maximo)
+                constructor_pais(
+                    country_name=country_name,
+                    M=self.M,
+                    proximidad=self.proximidad,
+                    eci=self.ECI[country_name],
+                    PCI=self.PCI,
+                    omega=self.omega,
+                    tiempo_maximo=self.tiempo_maximo)
                 for country_name in self.M.index}
 
 ######################################################################

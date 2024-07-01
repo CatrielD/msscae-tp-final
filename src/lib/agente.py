@@ -150,7 +150,7 @@ class PaisBaseMixin:
         return self.M.loc[self.country_name][pid] == 1
 
     def __str__(self):
-        return self.country_name
+        return f"{self.__class__.__name__}({self.country_name})"
 
 
 class PaisConCotaProximidadMixin:
@@ -228,19 +228,22 @@ class PaisComplejo(PaisNaive, IPais):
 
     def tiempo_para_ser_competitivo(self, pid: HS4_Product_Id) -> Tiempo:
         """ basicamente tomo las complejidades de productos y mapeo linealmente entre 0 y 10.
-             es decir el producto mas sencillo tarda 0 iteraciones, el mas complejo 10. """
+            es decir el producto mas sencillo tarda 0 iteraciones, el mas complejo 10. """
         return np.ceil(self.tiempo_maximo * (self.PCI.loc[pid] + np.abs(self.min_pci)) / self.max_pci)
+    #return self.min_eci * np.ceil(self.tiempo_maximo * (self.PCI.loc[pid] + np.abs(self.min_pci)) / (self.max_pci * self.mi_eci))
 
     def tiempos_para_ser_competitivo(self) -> Series[Tiempo]:
         frontera = self.frontera_de_productos()
         tiempos = [self.tiempo_para_ser_competitivo(pid) for pid in frontera]
-        return pd.Series(tiempos, index=frontera)
+        return pd.Series(tiempos, index=frontera, dtype=Tiempo)
 
     def conocer_estado_del_mundo(self, **kwargs):
         self.mi_eci = kwargs["eci"]
         self.PCI = kwargs["PCI"]
         super().conocer_estado_del_mundo(**kwargs)
 
+    def get_eci(self):
+        return self.mi_eci
 
 ######################################################################
 ###                                                                ###
