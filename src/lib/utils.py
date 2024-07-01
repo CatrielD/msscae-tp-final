@@ -13,6 +13,8 @@ class SubclassResponsability(Exception):
     def __init__(self):
         super().__init__("Subclass Responsability: este método tiene que ser implementado por una subclase")  # noqa
 
+def savefig(plt, filename):
+    plt.savefig(f"../img/{filename}.png", bbox_inches='tight', pad_inches=0)
 
 def print_m(msg, mostrar=True):
     if mostrar:
