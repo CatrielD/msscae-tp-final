@@ -23,9 +23,12 @@ __all__ = [
 
 class PaisHormiga(PaisComplejo):
     def elegir_productos(self) -> List[HS4_Product_Id]:
-        #TODO: por qué el 10% y no 1 o config? ... я не знаю, потому
         "selecciona los primeros 10% de productos más complejos de su frontera"
         tiempos = self.tiempos_para_ser_competitivo()
+
+        if len(tiempos) == 0:
+            return []
+
         return tiempos.nlargest(int(len(tiempos) * 0.1)).index.to_list()
 
 
@@ -33,6 +36,10 @@ class PaisCigarra(PaisComplejo):
     def elegir_productos(self) -> List[HS4_Product_Id]:
         "selecciona los últimos 10% de productos más complejos de su frontera"
         tiempos = self.tiempos_para_ser_competitivo()
+        
+        if len(tiempos) == 0:
+            return []
+
         return tiempos.nsmallest(int(len(tiempos) * 0.1)).index.to_list()
 
 
