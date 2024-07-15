@@ -36,7 +36,7 @@ class PaisCigarra(PaisComplejo):
     def elegir_productos(self) -> List[HS4_Product_Id]:
         "selecciona los últimos 10% de productos más complejos de su frontera"
         tiempos = self.tiempos_para_ser_competitivo()
-        
+
         if len(tiempos) == 0:
             return []
 
