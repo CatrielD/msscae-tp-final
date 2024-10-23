@@ -227,10 +227,17 @@ class PaisComplejo(PaisNaive, IPais):
         PaisNaive.__init__(self, country_name, M, proximidad, omega)
 
     def tiempo_para_ser_competitivo(self, pid: HS4_Product_Id) -> Tiempo:
-        """ basicamente tomo las complejidades de productos y mapeo linealmente entre 0 y 10.
-            es decir el producto mas sencillo tarda 0 iteraciones, el mas complejo 10. """
-        return np.ceil(self.tiempo_maximo * (self.PCI.loc[pid] + np.abs(self.min_pci)) / self.max_pci)
-    #return self.min_eci * np.ceil(self.tiempo_maximo * (self.PCI.loc[pid] + np.abs(self.min_pci)) / (self.max_pci * self.mi_eci))
+        """ basicamente tomo las complejidades de productos, si la máxima es M,
+        la mínima es m y el tiemp máximo es T;
+        genera un mapeo lineal entre T*m/M y T+T*m/M.
+        Es decir si T=10 el producto menos complejo tarda 10*m/M iteraciones,
+        el más complejo 10 + 10*m/M.
+        f(x) = xT / M + Tm/M = T(x+m)/M"""
+        x = self.PCI.loc[pid]
+        T = self.tiempo_maximo
+        M = self.max_pci
+        m = self.min_pci
+        return np.ceil(T * (x + np.abs(m)) / M)
 
     def tiempos_para_ser_competitivo(self) -> Series[Tiempo]:
         frontera = self.frontera_de_productos()

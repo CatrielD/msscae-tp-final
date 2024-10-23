@@ -127,10 +127,10 @@ class SimuladorProductSpace(Simulador):
 
     def es_fin_de_simulacion(self):
         return self.criterio_parada(self.current_step)
-    
+
     def grafo( self ):
         nodos = self.proximidad.columns.tolist()
-        matriz_adyacencia = self.proximidad.values        
+        matriz_adyacencia = self.proximidad.values
         edges = np.where(matriz_adyacencia > self.omega, matriz_adyacencia, np.zeros_like(matriz_adyacencia))
 
         G = nx.from_numpy_array( edges, edge_attr='weight' )
