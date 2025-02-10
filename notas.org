@@ -1,0 +1,38 @@
+
+- [ ] explicar donde está la complejidad
+- [ ] TOC
+
+
+# Métodos
+# Experimentos
+## Variación de Omega
+### Reproducción del paper anterior
+### Resultados en un sistema de temporalidad variable
+## Variación del Lag
+## Exploración fija
+## Un mundo dividido: Impacto de estrategias para paises periféricos y centrales en la complejidad de los paises
+### El ECI no permanece estático
+### Estudio de impacto agregado
+# Visualizacíon del Product Space
+# Limitaciones de este modelo y próximos trabajos
+
+
+
+# Tabla de Contenidos
+- **1** Introducción
+- **2** Métodos
+- **3** Experimentos
+    - **3.1** Variación de Omega
+        - **3.1.1** Reproducción del paper anterior
+        - **3.1.2** Resultados en un sistema de temporalidad variable
+    - **3.2** Variación del Lag
+    - **3.3** Exploración fija
+    - **3.4** Un mundo dividido: Impacto de estrategias para paises periféricos y centrales en la complejidad de los paises
+        - **3.4.1** El ECI no permanece estático
+        - **3.4.2** Estudio de impacto agregado
+- **4** Visualizacíon del Product Space
+- **5** Limitaciones de este modelo y próximos trabajos
+
+
+
+Mostraremos evolución, tomando dos paises distintos, Argentina y Alemania. Elegimos estos paises ya que la Argentina es nuestro país y por lo tanto nos genera particular interes, y Alemania porque es un típico ejemplo de economía desarrollada y exitosa en términos productivos. Además, en un primer lugar reproducieremos algunos resultados del trabajo del que partimos que utilizan como casos modelo estos dos paises.
